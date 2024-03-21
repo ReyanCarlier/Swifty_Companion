@@ -89,4 +89,10 @@
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </RazorComponent>
     </ItemGroup>
+    <ItemGroup>
+      <Content Remove="appsettings.json" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="appsettings.json" />
+    </ItemGroup>
 </Project>

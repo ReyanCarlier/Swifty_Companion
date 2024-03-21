@@ -23,11 +23,10 @@ public static class MauiProgram
 			});
 
 		builder.Services.AddMauiBlazorWebView();
-        var appSettings = LoadAppSettings();
         var school42Options = new School42OAuthOptions
         {
-            ClientId = appSettings["OAuthSettings:ClientId"],
-            ClientSecret = appSettings["OAuthSettings:ClientSecret"],
+            ClientId = "",
+            ClientSecret = "",
         };
         builder.Services.AddMudServices();
         builder.Services.AddSingleton(school42Options);
@@ -40,14 +39,5 @@ public static class MauiProgram
 
 		return builder.Build();
 	}
-
-    private static IDictionary<string, string> LoadAppSettings()
-    {
-        var appSettingsPath = Path.Combine(FileSystem.AppDataDirectory, "appsettings.json");
-        using (var stream = File.OpenRead(appSettingsPath))
-        {
-            return JsonSerializer.Deserialize<IDictionary<string, string>>(stream);
-        }
-    }
 }
 

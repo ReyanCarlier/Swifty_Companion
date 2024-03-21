@@ -94,7 +94,10 @@ public class AuthService
         var t = await SecureStorage.GetAsync("tokenresponse");
         if (t == null)
             return null;
-        return JsonSerializer.Deserialize<TokenResponse>(t);
+        var token = JsonSerializer.Deserialize<TokenResponse>(t);
+        if (token == null || token.ExpiresIn == 0)
+            return null;
+        return token;
     }
 
     public bool LogOut()
