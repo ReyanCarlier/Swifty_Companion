@@ -1,0 +1,67 @@
+﻿@page "/skills"
+@inject AuthService AuthService
+@inject SchoolApiService ApiService
+@inject NavigationManager NavigationManager
+
+@if (!IsInternetAvailable())
+{
+    <div class="alert alert-warning" role="alert">
+        Aucune connexion Internet détectée. Certaines fonctionnalités peuvent ne pas être disponibles.
+    </div>
+}
+else
+{
+    if (User != null)
+    {
+        <MudGrid>
+            <MudItem xs="12">
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.body1">@User.Login' Skills</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @foreach (var exp in User.CursusUsers)
+                        {
+                            if (exp.Grade == "Member")
+                            {
+                                foreach (var skill in exp.Skills)
+                                {
+                                    <MudText>@skill.Name : @skill.Level</MudText>
+                                }
+                                break;
+                            }
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+}
+
+
+@code {
+    public User? User = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!IsInternetAvailable())
+            return;
+        var storedToken = await AuthService.GetStoredTokenAsync();
+        if (storedToken == null)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            User = await ApiService.GetSelfAsync();
+        }
+    }
+
+    public bool IsInternetAvailable()
+    {
+        var profiles = Connectivity.Current.NetworkAccess;
+        return profiles == NetworkAccess.Internet;
+    }
+}

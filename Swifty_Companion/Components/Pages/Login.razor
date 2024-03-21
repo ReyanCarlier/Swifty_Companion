@@ -1,0 +1,83 @@
+﻿@page "/login"
+@inject AuthService AuthService
+@inject SchoolApiService ApiService
+@inject NavigationManager NavigationManager
+
+@if (!IsInternetAvailable())
+{
+<div class="alert alert-warning" role="alert">
+    Aucune connexion Internet détectée. Certaines fonctionnalités peuvent ne pas être disponibles.
+</div>
+}
+else
+{
+    if (User == null)
+    {
+        <MudContainer>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudButton OnClick="() => Authenticate()">Login with 42</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+
+    }
+    else
+    {
+        <MudContainer>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudButton OnClick="() => LogOut()">Logout</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudContainer>
+    }
+}
+
+
+@code {
+    public User? User = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!IsInternetAvailable())
+            return;
+        User = await ApiService.GetSelfAsync();
+    }
+
+    private async Task Authenticate()
+    {
+        try
+        {
+            await AuthService.GetTokenAsync();
+            User = await ApiService.GetSelfAsync();
+            NavigationManager.NavigateTo("/", true);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task LogOut()
+    {
+        try
+        {
+            AuthService.LogOut();
+            User = null;
+            StateHasChanged();
+            NavigationManager.NavigateTo("/login", true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    public bool IsInternetAvailable()
+    {
+        var profiles = Connectivity.Current.NetworkAccess;
+        return profiles == NetworkAccess.Internet;
+    }
+}

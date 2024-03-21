@@ -1,0 +1,66 @@
+﻿@inherits LayoutComponentBase
+@inject AuthService AuthService
+@inject SchoolApiService ApiService
+
+<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar>
+        <MudText>Maui Companion</MudText>
+        <MudSpacer />
+        @if (user != null)
+        {
+            <MudAvatar>
+                <MudImage Src="@user.Image.Link"></MudImage>
+            </MudAvatar>
+        }
+    </MudAppBar>
+    <MudAppBar Bottom="true">
+        <MudGrid>
+            @if (tokenResponse != null)
+            {
+                <MudItem sm="4"><MudIconButton Icon="@Icons.Material.Filled.Home" Href="/"></MudIconButton></MudItem>
+                <MudItem sm="4"><MudIconButton Icon="@Icons.Material.Filled.WorkHistory" Href="/projects"></MudIconButton></MudItem>
+                <MudItem sm="4"><MudIconButton Icon="@Icons.Material.Filled.QueryStats" Href="/skills"></MudIconButton></MudItem>
+                <MudItem sm="4"><MudIconButton Icon="@Icons.Material.Filled.ManageAccounts" Href="/login"></MudIconButton></MudItem>
+            }
+            else
+            {
+                <MudItem sm="4"><MudIconButton Icon="@Icons.Material.Filled.ManageAccounts" Href="/login"></MudIconButton></MudItem>
+            }
+        </MudGrid>
+    </MudAppBar>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-4 h-100">
+            @Body
+            <div style="min-height:100px;background-color: var(--mud-palette-background);" />
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _isDarkMode;
+    private MudThemeProvider _mudThemeProvider;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            StateHasChanged();
+        }
+    }
+
+    TokenResponse? tokenResponse = null;
+    User? user = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        tokenResponse = await AuthService.GetStoredTokenAsync();
+        if (tokenResponse != null)
+            user = await ApiService.GetSelfAsync();
+        return;
+    }
+}

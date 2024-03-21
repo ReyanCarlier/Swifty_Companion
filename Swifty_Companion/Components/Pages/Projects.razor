@@ -1,0 +1,69 @@
+﻿@page "/projects"
+@inject AuthService AuthService
+@inject SchoolApiService ApiService
+@inject NavigationManager NavigationManager
+
+@if (!IsInternetAvailable())
+{
+    <div class="alert alert-warning" role="alert">
+        Aucune connexion Internet détectée. Certaines fonctionnalités peuvent ne pas être disponibles.
+    </div>
+}
+else
+{
+    if (User != null)
+    {
+<MudGrid>
+    <MudItem xs="12">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.body1">@User.Login' Projects</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                @foreach (var projectsUser in User.ProjectsUsers)
+                    {
+                        if (projectsUser.FinalMark == null || projectsUser.Status != "finished")
+                            continue;
+                        if (projectsUser.IsValidated == true)
+                        {
+                        <MudText Color="Color.Success">@projectsUser.Project.Name : @projectsUser.FinalMark</MudText>
+                        }
+                        else
+                        {
+                        <MudText Color="Color.Error">@projectsUser.Project.Name : @projectsUser.FinalMark</MudText>
+                        }
+                    }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+    }
+}
+
+
+@code {
+    public User? User = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!IsInternetAvailable())
+            return;
+        var storedToken = await AuthService.GetStoredTokenAsync();
+        if (storedToken == null)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            User = await ApiService.GetSelfAsync();
+        }
+    }
+
+    public bool IsInternetAvailable()
+    {
+        var profiles = Connectivity.Current.NetworkAccess;
+        return profiles == NetworkAccess.Internet;
+    }
+}

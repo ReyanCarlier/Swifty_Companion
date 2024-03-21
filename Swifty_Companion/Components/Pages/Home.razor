@@ -1,0 +1,60 @@
+﻿@page "/"
+@inject AuthService AuthService
+@inject SchoolApiService ApiService
+@inject NavigationManager NavigationManager
+
+@if (!IsInternetAvailable())
+{
+    <div class="alert alert-warning" role="alert">
+        Aucune connexion Internet détectée. Certaines fonctionnalités peuvent ne pas être disponibles.
+    </div>
+}
+else if (User != null)
+{
+    <MudGrid>
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar>
+                            <MudImage Src="@User.Image.Link"></MudImage>
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.body1">@User.Login</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText>Wallet : @User.Wallet</MudText>
+                    <MudText>Piscine : @User.PoolMonth @User.PoolYear</MudText>
+                    <MudText>Email : @User.Email</MudText>
+                    <MudText>Evaluation Points : @User.CorrectionPoint</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+}
+
+
+@code {
+    public User? User = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var storedToken = await AuthService.GetStoredTokenAsync();
+        if (storedToken == null)
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            User = await ApiService.GetSelfAsync();
+        }
+    }
+
+    public bool IsInternetAvailable()
+    {
+        var profiles = Connectivity.Current.NetworkAccess;
+        return profiles == NetworkAccess.Internet;
+    }
+}
